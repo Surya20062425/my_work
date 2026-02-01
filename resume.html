@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResumeCraft Pro - Professional Resume Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* A4 Paper */
+        .a4-paper {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.15);
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        @media screen and (max-width: 1024px) {
+            .a4-paper {
+                width: 100%;
+                min-height: auto;
+                aspect-ratio: 210/297;
+            }
+        }
+        
+        /* Print Styles */
+        @media print {
+            @page { margin: 0; size: auto; }
+            body * { visibility: hidden; }
+            #resumePreview, #resumePreview * { visibility: visible; }
+            #resumePreview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                background: white !important;
+            }
+            .no-print { display: none !important; }
+        }
+        
+        .template-minimal { font-family: 'Inter', sans-serif; }
+        .template-professional { font-family: 'Merriweather', serif; }
+        .template-tech { font-family: 'Space Grotesk', sans-serif; }
+        
+        /* Drag and Drop */
+        .draggable-item {
+            cursor: move;
+            transition: all 0.2s;
+        }
+        .draggable-item:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-color: #3b82f6;
+        }
+        .draggable-item.dragging {
+            opacity: 0.5;
+            border: 2px dashed #3b82f6;
+        }
+        .drag-handle {
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        
+        /* Form Focus Effects */
+        .input-focus-effect:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+        
+        /* Section Card */
+        .section-card {
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .section-card:hover {
+            border-left-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+        
+        /* Color Picker Custom */
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .color-option.active {
+            border-color: #1e293b;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 shadow-sm z-20 relative no-print">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center text-lg font-bold shadow-lg shadow-blue-200">
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-xl text-slate-800">ResumeCraft</h1>
+                <p class="text-xs text-slate-500">Pro Builder</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <button onclick="resetAll()" class="px-4 py-2 text-slate-600 hover:text-red-600 transition flex items-center gap-2 rounded-lg hover:bg-red-50">
+                <i class="fas fa-trash-alt"></i>
+                <span class="hidden sm:inline font-medium">Reset</span>
+            </button>
+            <button onclick="loadDemoData()" class="px-4 py-2 text-slate-600 hover:text-blue-600 transition flex items-center gap-2 rounded-lg hover:bg-blue-50">
+                <i class="fas fa-magic"></i>
+                <span class="hidden sm:inline font-medium">Demo</span>
+            </button>
+            <button onclick="exportPDF()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-lg shadow-blue-200 font-medium">
+                <i class="fas fa-download"></i>
+                <span>Export PDF</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex h-[calc(100vh-64px)] overflow-hidden">
+        
+        <!-- Editor Sidebar -->
+        <aside class="w-full lg:w-2/5 xl:w-1/3 bg-white border-r border-slate-200 overflow-y-auto no-print flex flex-col">
+            
+            <!-- Template & Color Selection -->
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-slate-700 mb-3">Template Style</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="setTemplate('minimal')" id="tpl-minimal" class="template-btn active ring-2 ring-blue-500 bg-white p-3 rounded-xl border border-slate-200 text-center hover:shadow-md transition">
+                            <div class="font-bold text-sm mb-1">Minimal</div>
+                            <div class="text-xs text-slate-500">Clean & Simple</div>
+                        </button>
+                        <button onclick="setTemplate('professional')" id="tpl-professional" class="template-btn bg-white p-3 rounded-xl border border-slate-200 text-center hover:shadow-md transition">
+                            <div class="font-bold text-sm mb-1">Professional</div>
+                            <div class="text-xs text-slate-500">Traditional</div>
+                        </button>
+                        <button onclick="setTemplate('tech')" id="tpl-tech" class="template-btn bg-white p-3 rounded-xl border border-slate-200 text-center hover:shadow-md transition">
+                            <div class="font-bold text-sm mb-1">Tech</div>
+                            <div class="text-xs text-slate-500">Modern</div>
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-3">Accent Color</label>
+                    <div class="flex gap-3">
+                        <div onclick="setColor('#2563eb')" class="color-option active bg-blue-600" data-color="#2563eb"></div>
+                        <div onclick="setColor('#dc2626')" class="color-option bg-red-600" data-color="#dc2626"></div>
+                        <div onclick="setColor('#059669')" class="color-option bg-emerald-600" data-color="#059669"></div>
+                        <div onclick="setColor('#7c3aed')" class="color-option bg-violet-600" data-color="#7c3aed"></div>
+                        <div onclick="setColor('#ea580c')" class="color-option bg-orange-600" data-color="#ea580c"></div>
+                        <div onclick="setColor('#0891b2')" class="color-option bg-cyan-600" data-color="#0891b2"></div>
+                        <div onclick="setColor('#0f172a')" class="color-option bg-slate-900" data-color="#0f172a"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Sections -->
+            <div class="flex-1 p-6 space-y-6">
+                
+                <!-- Personal Info -->
+                <section class="fade-in">
+                    <div class="flex items-center gap-2 text-slate-800 mb-4 pb-2 border-b-2 border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h2 class="font-bold text-lg">Personal Info</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Full Name</label>
+                            <input type="text" id="input-name" oninput="updateResume()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg input-focus-effect outline-none transition" placeholder="John Anderson">
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Professional Title</label>
+                            <input type="text" id="input-title" oninput="updateResume()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg input-focus-effect outline-none transition" placeholder="Senior Software Engineer">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Email</label>
+                            <input type="email" id="input-email" oninput="updateResume()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg input-focus-effect outline-none transition" placeholder="john@email.com">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Phone</label>
+                            <input type="tel" id="input-phone" oninput="updateResume()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg input-focus-effect outline-none transition" placeholder="+1 (555) 000-0000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Location</label>
+                            <input type="text" id="input-location" oninput="updateResume()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg input-focus-effect outline-none transition" placeholder="San Francisco, CA">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Website</label>
+                            <input type="text" id="input-website" oninput="updateResume()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg input-focus-effect outline-none transition" placeholder="linkedin.com/in/john">
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-600 mb-1.5">Professional Summary</label>
+                            <textarea id="input-summary" oninput="updateResume()" rows="3" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg input-focus-effect outline-none transition resize-none" placeholder="Brief overview of your professional background..."></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Experience Section -->
+                <section class="fade-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center justify-between text-slate-800 mb-4 pb-2 border-b-2 border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <h2 class="font-bold text-lg">Experience</h2>
+                        </div>
+                        <button onclick="addExperience()" class="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 px-3 py-1 rounded-full hover:bg-blue-50 transition">
+                            <i class="fas fa-plus-circle"></i> Add
+                        </button>
+                    </div>
+                    
+                    <div id="experience-container" class="space-y-3">
+                        <!-- Experience items -->
+                    </div>
+                </section>
+
+                <!-- Education Section -->
+                <section class="fade-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between text-slate-800 mb-4 pb-2 border-b-2 border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h2 class="font-bold text-lg">Education</h2>
+                        </div>
+                        <button onclick="addEducation()" class="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 px-3 py-1 rounded-full hover:bg-blue-50 transition">
+                            <i class="fas fa-plus-circle"></i> Add
+                        </button>
+                    </div>
+                    
+                    <div id="education-container" class="space-y-3">
+                        <!-- Education items -->
+                    </div>
+                </section>
+
+                <!-- Skills Section -->
+                <section class="fade-in" style="animation-delay: 0.3s">
+                    <div class="flex items-center gap-2 text-slate-800 mb-4 pb-2 border-b-2 border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h2 class="font-bold text-lg">Skills</h2>
+                    </div>
+                    
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="skill-input" onkeypress="handleSkillKey(event)" class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg input-focus-effect outline-none transition" placeholder="Add a skill (e.g., React, Python)">
+                        <button onclick="addSkill()" class="bg-slate-800 text-white px-4 py-2.5 rounded-lg hover:bg-slate-900 transition">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="skills-container" class="flex flex-wrap gap-2">
+                        <!-- Skills tags -->
+                    </div>
+                </section>
+
+                <!-- Projects Section -->
+                <section class="fade-in" style="animation-delay: 0.4s">
+                    <div class="flex items-center justify-between text-slate-800 mb-4 pb-2 border-b-2 border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <h2 class="font-bold text-lg">Projects</h2>
+                        </div>
+                        <button onclick="addProject()" class="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 px-3 py-1 rounded-full hover:bg-blue-50 transition">
+                            <i class="fas fa-plus-circle"></i> Add
+                        </button>
+                    </div>
+                    
+                    <div id="projects-container" class="space-y-3">
+                        <!-- Project items -->
+                    </div>
+                </section>
+
+                <div class="h-12"></div>
+            </div>
+        </aside>
+
+        <!-- Preview Area -->
+        <main class="hidden lg:block lg:w-3/5 xl:w-2/3 bg-slate-100 overflow-y-auto p-8 relative">
+            <div class="a4-paper shadow-2xl" id="resume-preview">
+                <!-- Resume content -->
+            </div>
+            
+            <!-- Floating actions -->
+            <div class="fixed bottom-6 right-6 flex flex-col gap-2 no-print">
+                <button onclick="zoomIn()" class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 hover:text-blue-600 transition" title="Zoom In">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button onclick="zoomOut()" class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 hover:text-blue-600 transition" title="Zoom Out">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+        </main>
+
+        <!-- Mobile Preview Modal -->
+        <div id="mobile-preview" class="lg:hidden fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-slate-800">Preview</h3>
+                    <button onclick="closeMobilePreview()" class="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center transition">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="overflow-y-auto p-4 bg-slate-100 flex-1">
+                    <div id="mobile-resume-content" class="a4-paper shadow-lg"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Preview Button -->
+        <button onclick="openMobilePreview()" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl flex items-center justify-center text-xl z-40 no-print">
+            <i class="fas fa-eye"></i>
+        </button>
+    </div>
+
+    <script>
+        // State Management
+        let resumeData = {
+            template: 'minimal',
+            color: '#2563eb',
+            personal: {},
+            experience: [],
+            education: [],
+            skills: [],
+            projects: []
+        };
+
+        let zoomLevel = 1;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('resumeCraftData');
+            if (saved) {
+                resumeData = JSON.parse(saved);
+                loadDataToForm();
+            }
+            updatePreview();
+        });
+
+        // Auto-save
+        setInterval(() => {
+            localStorage.setItem('resumeCraftData', JSON.stringify(resumeData));
+        }, 2000);
+
+        // Template Management
+        function setTemplate(template) {
+            resumeData.template = template;
+            document.querySelectorAll('.template-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-blue-500');
+            });
+            document.getElementById(`tpl-${template}`).classList.add('ring-2', 'ring-blue-500');
+            updatePreview();
+        }
+
+        function setColor(color) {
+            resumeData.color = color;
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('active');
+                if(opt.dataset.color === color) opt.classList.add('active');
+            });
+            updatePreview();
+        }
+
+        // Data Updates
+        function updateData() {
+            resumeData.personal = {
+                name: document.getElementById('input-name').value,
+                title: document.getElementById('input-title').value,
+                email: document.getElementById('input-email').value,
+                phone: document.getElementById('input-phone').value,
+                location: document.getElementById('input-location').value,
+                website: document.getElementById('input-website').value,
+                summary: document.getElementById('input-summary').value
+            };
+        }
+
+        function updateResume() {
+            updateData();
+            updatePreview();
+        }
+
+        // Experience Management
+        function addExperience(data = null) {
+            const id = Date.now();
+            const exp = data || {
+                id, company: '', position: '', startDate: '', endDate: '', current: false, description: ''
+            };
+            
+            if (!data) resumeData.experience.push(exp);
+            
+            const div = document.createElement('div');
+            div.className = 'section-card bg-white p-4 rounded-xl border border-slate-200 slide-in';
+            div.dataset.id = id;
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center gap-2 text-slate-400 drag-handle">
+                        <i class="fas fa-grip-vertical"></i>
+                    </div>
+                    <button onclick="removeExperience(${id})" class="text-slate-400 hover:text-red-500 transition">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" placeholder="Company" value="${exp.company}" oninput="updateExperience(${id}, 'company', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                    <input type="text" placeholder="Position" value="${exp.position}" oninput="updateExperience(${id}, 'position', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                    <input type="text" placeholder="Start Date" value="${exp.startDate}" oninput="updateExperience(${id}, 'startDate', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="End Date" value="${exp.endDate}" oninput="updateExperience(${id}, 'endDate', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm" ${exp.current ? 'disabled' : ''}>
+                        <label class="flex items-center gap-1 text-xs whitespace-nowrap text-slate-600">
+                            <input type="checkbox" onchange="toggleCurrent(${id}, 'experience', this.checked)" ${exp.current ? 'checked' : ''}> Current
+                        </label>
+                    </div>
+                </div>
+                <textarea placeholder="Description (achievements, responsibilities...)" rows="2" oninput="updateExperience(${id}, 'description', this.value)" class="w-full mt-3 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm resize-none">${exp.description}</textarea>
+            `;
+            
+            document.getElementById('experience-container').appendChild(div);
+        }
+
+        function updateExperience(id, field, value) {
+            const item = resumeData.experience.find(e => e.id === id);
+            if (item) {
+                item[field] = value;
+                updatePreview();
+            }
+        }
+
+        function removeExperience(id) {
+            resumeData.experience = resumeData.experience.filter(e => e.id !== id);
+            document.querySelector(`#experience-container [data-id="${id}"]`).remove();
+            updatePreview();
+        }
+
+        // Education Management
+        function addEducation(data = null) {
+            const id = Date.now();
+            const edu = data || {
+                id, school: '', degree: '', field: '', graduationDate: ''
+            };
+            
+            if (!data) resumeData.education.push(edu);
+            
+            const div = document.createElement('div');
+            div.className = 'section-card bg-white p-4 rounded-xl border border-slate-200 slide-in';
+            div.dataset.id = id;
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center gap-2 text-slate-400 drag-handle">
+                        <i class="fas fa-grip-vertical"></i>
+                    </div>
+                    <button onclick="removeEducation(${id})" class="text-slate-400 hover:text-red-500 transition">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                <input type="text" placeholder="School/University" value="${edu.school}" oninput="updateEducation(${id}, 'school', this.value)" class="w-full mb-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" placeholder="Degree" value="${edu.degree}" oninput="updateEducation(${id}, 'degree', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                    <input type="text" placeholder="Graduation Date" value="${edu.graduationDate}" oninput="updateEducation(${id}, 'graduationDate', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                </div>
+                <input type="text" placeholder="Field of Study" value="${edu.field}" oninput="updateEducation(${id}, 'field', this.value)" class="w-full mt-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+            `;
+            
+            document.getElementById('education-container').appendChild(div);
+        }
+
+        function updateEducation(id, field, value) {
+            const item = resumeData.education.find(e => e.id === id);
+            if (item) {
+                item[field] = value;
+                updatePreview();
+            }
+        }
+
+        function removeEducation(id) {
+            resumeData.education = resumeData.education.filter(e => e.id !== id);
+            document.querySelector(`#education-container [data-id="${id}"]`).remove();
+            updatePreview();
+        }
+
+        // Projects Management
+        function addProject(data = null) {
+            const id = Date.now();
+            const proj = data || {
+                id, name: '', description: '', link: '', technologies: ''
+            };
+            
+            if (!data) resumeData.projects.push(proj);
+            
+            const div = document.createElement('div');
+            div.className = 'section-card bg-white p-4 rounded-xl border border-slate-200 slide-in';
+            div.dataset.id = id;
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center gap-2 text-slate-400 drag-handle">
+                        <i class="fas fa-grip-vertical"></i>
+                    </div>
+                    <button onclick="removeProject(${id})" class="text-slate-400 hover:text-red-500 transition">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                    <input type="text" placeholder="Project Name" value="${proj.name}" oninput="updateProject(${id}, 'name', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                    <input type="text" placeholder="Link (optional)" value="${proj.link}" oninput="updateProject(${id}, 'link', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                </div>
+                <input type="text" placeholder="Technologies used (e.g., React, Node.js)" value="${proj.technologies}" oninput="updateProject(${id}, 'technologies', this.value)" class="w-full mb-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm">
+                <textarea placeholder="Project description..." rows="2" oninput="updateProject(${id}, 'description', this.value)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-sm resize-none">${proj.description}</textarea>
+            `;
+            
+            document.getElementById('projects-container').appendChild(div);
+        }
+
+        function updateProject(id, field, value) {
+            const item = resumeData.projects.find(p => p.id === id);
+            if (item) {
+                item[field] = value;
+                updatePreview();
+            }
+        }
+
+        function removeProject(id) {
+            resumeData.projects = resumeData.projects.filter(p => p.id !== id);
+            document.querySelector(`#projects-container [data-id="${id}"]`).remove();
+            updatePreview();
+        }
+
+        // Skills Management
+        function handleSkillKey(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addSkill();
+            }
+        }
+
+        function addSkill(skill = null) {
+            const input = document.getElementById('skill-input');
+            const value = skill || input.value.trim();
+            
+            if (value && !resumeData.skills.includes(value)) {
+                resumeData.skills.push(value);
+                renderSkills();
+                if (!skill) input.value = '';
+                updatePreview();
+            }
+        }
+
+        function removeSkill(skill) {
+            resumeData.skills = resumeData.skills.filter(s => s !== skill);
+            renderSkills();
+            updatePreview();
+        }
+
+        function renderSkills() {
+            const container = document.getElementById('skills-container');
+            container.innerHTML = resumeData.skills.map(skill => `
+                <span onclick="removeSkill('${skill}')" class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm cursor-pointer hover:bg-red-50 hover:text-red-600 transition border border-slate-200">
+                    ${skill}
+                    <i class="fas fa-times text-xs"></i>
+                </span>
+            `).join('');
+        }
+
+        // Helper
+        function toggleCurrent(id, type, checked) {
+            const array = type === 'experience' ? resumeData.experience : resumeData.education;
+            const item = array.find(i => i.id === id);
+            if (item) {
+                item.current = checked;
+                item.endDate = checked ? 'Present' : '';
+                loadDataToForm();
+                updatePreview();
+            }
+        }
+
+        // Render Templates
+        function updatePreview() {
+            const { template, color, personal, experience, education, skills, projects } = resumeData;
+            const preview = document.getElementById('resume-preview');
+            const mobileContent = document.getElementById('mobile-resume-content');
+            
+            let html = '';
+            
+            if (template === 'minimal') {
+                html = renderMinimal(personal, experience, education, skills, projects, color);
+            } else if (template === 'professional') {
+                html = renderProfessional(personal, experience, education, skills, projects, color);
+            } else {
+                html = renderTech(personal, experience, education, skills, projects, color);
+            }
+            
+            preview.innerHTML = html;
+            if (mobileContent) mobileContent.innerHTML = html;
+        }
+
+        function renderMinimal(personal, experience, education, skills, projects, color) {
+            return `
+                <div class="template-minimal p-10 h-full text-slate-800">
+                    <header class="border-b-2 mb-6 pb-6" style="border-color: ${color}">
+                        <h1 class="text-4xl font-bold mb-2" style="color: ${color}">${personal.name || 'Your Name'}</h1>
+                        <p class="text-xl text-slate-600 mb-4">${personal.title || 'Professional Title'}</p>
+                        <div class="flex flex-wrap gap-4 text-sm text-slate-500">
+                            ${personal.email ? `<span class="flex items-center gap-1"><i class="fas fa-envelope" style="color: ${color}"></i> ${personal.email}</span>` : ''}
+                            ${personal.phone ? `<span class="flex items-center gap-1"><i class="fas fa-phone" style="color: ${color}"></i> ${personal.phone}</span>` : ''}
+                            ${personal.location ? `<span class="flex items-center gap-1"><i class="fas fa-map-marker-alt" style="color: ${color}"></i> ${personal.location}</span>` : ''}
+                            ${personal.website ? `<span class="flex items-center gap-1"><i class="fas fa-globe" style="color: ${color}"></i> ${personal.website}</span>` : ''}
+                        </div>
+                    </header>
+
+                    ${personal.summary ? `
+                        <section class="mb-6">
+                            <h2 class="text-lg font-bold uppercase tracking-wider mb-3" style="color: ${color}">Summary</h2>
+                            <p class="text-slate-600 leading-relaxed">${personal.summary}</p>
+                        </section>
+                    ` : ''}
+
+                    ${experience.length ? `
+                        <section class="mb-6">
+                            <h2 class="text-lg font-bold uppercase tracking-wider mb-4" style="color: ${color}">Experience</h2>
+                            <div class="space-y-4">
+                                ${experience.map(exp => `
+                                    <div>
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h3 class="font-bold text-slate-800">${exp.position}</h3>
+                                            <span class="text-sm text-slate-500 font-medium">${exp.startDate} - ${exp.endDate}</span>
+                                        </div>
+                                        <div class="text-slate-600 mb-1 font-medium">${exp.company}</div>
+                                        <p class="text-slate-600 text-sm leading-relaxed">${exp.description}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </section>
+                    ` : ''}
+
+                    ${projects.length ? `
+                        <section class="mb-6">
+                            <h2 class="text-lg font-bold uppercase tracking-wider mb-4" style="color: ${color}">Projects</h2>
+                            <div class="space-y-3">
+                                ${projects.map(proj => `
+                                    <div>
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h3 class="font-bold text-slate-800">${proj.name}</h3>
+                                            ${proj.link ? `<a href="${proj.link}" class="text-sm" style="color: ${color}">View →</a>` : ''}
+                                        </div>
+                                        ${proj.technologies ? `<div class="text-sm text-slate-500 mb-1">${proj.technologies}</div>` : ''}
+                                        <p class="text-slate-600 text-sm">${proj.description}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </section>
+                    ` : ''}
+
+                    <div class="grid grid-cols-2 gap-8">
+                        ${education.length ? `
+                            <section>
+                                <h2 class="text-lg font-bold uppercase tracking-wider mb-4" style="color: ${color}">Education</h2>
+                                <div class="space-y-3">
+                                    ${education.map(edu => `
+                                        <div>
+                                            <h3 class="font-bold text-slate-800">${edu.school}</h3>
+                                            <div class="text-slate-600 text-sm">${edu.degree}${edu.field ? `, ${edu.field}` : ''}</div>
+                                            <div class="text-slate-500 text-sm">${edu.graduationDate}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </section>
+                        ` : ''}
+
+                        ${skills.length ? `
+                            <section>
+                                <h2 class="text-lg font-bold uppercase tracking-wider mb-4" style="color: ${color}">Skills</h2>
+                                <div class="flex flex-wrap gap-2">
+                                    ${skills.map(skill => `
+                                        <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded text-sm">${skill}</span>
+                                    `).join('')}
+                                </div>
+                            </section>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProfessional(personal, experience, education, skills, projects, color) {
+            return `
+                <div class="template-professional p-10 h-full text-slate-800" style="font-family: 'Merriweather', serif;">
+                    <header class="text-center border-b-2 border-slate-300 pb-6 mb-6">
+                        <h1 class="text-3xl font-bold mb-2 text-slate-900">${personal.name || 'Your Name'}</h1>
+                        <p class="text-lg text-slate-600 mb-3 italic">${personal.title || 'Professional Title'}</p>
+                        <div class="text-sm text-slate-500 space-y-1">
+                            ${personal.email ? `<div>${personal.email}</div>` : ''}
+                            ${personal.phone ? `<div>${personal.phone}</div>` : ''}
+                            ${personal.location ? `<div>${personal.location}</div>` : ''}
+                            ${personal.website ? `<div>${personal.website}</div>` : ''}
+                        </div>
+                    </header>
+
+                    ${personal.summary ? `
+                        <section class="mb-6">
+                            <h2 class="text-md font-bold text-slate-900 border-b border-slate-300 mb-3 pb-1 uppercase tracking-wide">Professional Summary</h2>
+                            <p class="text-slate-700 leading-relaxed text-justify text-sm">${personal.summary}</p>
+                        </section>
+                    ` : ''}
+
+                    ${experience.length ? `
+                        <section class="mb-6">
+                            <h2 class="text-md font-bold text-slate-900 border-b border-slate-300 mb-4 pb-1 uppercase tracking-wide">Professional Experience</h2>
+                            <div class="space-y-4">
+                                ${experience.map(exp => `
+                                    <div>
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h3 class="font-bold text-slate-800 text-sm">${exp.company}</h3>
+                                            <span class="text-xs text-slate-500 italic">${exp.startDate} – ${exp.endDate}</span>
+                                        </div>
+                                        <div class="italic text-slate-700 text-sm mb-1">${exp.position}</div>
+                                        <p class="text-slate-600 text-xs leading-relaxed">${exp.description}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </section>
+                    ` : ''}
+
+                    ${projects.length ? `
+                        <section class="mb-6">
+                            <h2 class="text-md font-bold text-slate-900 border-b border-slate-300 mb-4 pb-1 uppercase tracking-wide">Projects</h2>
+                            <div class="space-y-3">
+                                ${projects.map(proj => `
+                                    <div>
+                                        <div class="flex justify-between items-baseline">
+                                            <h3 class="font-bold text-slate-800 text-sm">${proj.name}</h3>
+                                            ${proj.link ? `<span class="text-xs text-slate-500">${proj.link}</span>` : ''}
+                                        </div>
+                                        ${proj.technologies ? `<div class="text-xs text-slate-600 italic mb-1">${proj.technologies}</div>` : ''}
+                                        <p class="text-slate-600 text-xs">${proj.description}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </section>
+                    ` : ''}
+
+                    <div class="grid grid-cols-2 gap-6">
+                        ${education.length ? `
+                            <section>
+                                <h2 class="text-md font-bold text-slate-900 border-b border-slate-300 mb-3 pb-1 uppercase tracking-wide">Education</h2>
+                                <div class="space-y-2">
+                                    ${education.map(edu => `
+                                        <div>
+                                            <h3 class="font-bold text-slate-800 text-sm">${edu.school}</h3>
+                                            <div class="text-slate-700 text-xs italic">${edu.degree}${edu.field ? `, ${edu.field}` : ''}</div>
+                                            <div class="text-slate-500 text-xs">${edu.graduationDate}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </section>
+                        ` : ''}
+
+                        ${skills.length ? `
+                            <section>
+                                <h2 class="text-md font-bold text-slate-900 border-b border-slate-300 mb-3 pb-1 uppercase tracking-wide">Skills</h2>
+                                <p class="text-slate-700 text-sm leading-relaxed">${skills.join(', ')}</p>
+                            </section>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTech(personal, experience, education, skills, projects, color) {
+            return `
+                <div class="template-tech flex h-full text-slate-800" style="font-family: 'Space Grotesk', sans-serif;">
+                    <aside class="w-1/3 p-8 text-white" style="background-color: ${color}">
+                        <div class="mb-8">
+                            <h1 class="text-2xl font-bold mb-2 leading-tight">${personal.name || 'Your Name'}</h1>
+                            <p class="text-white/80 text-sm">${personal.title || 'Professional Title'}</p>
+                        </div>
+
+                        <div class="space-y-3 text-sm mb-8">
+                            ${personal.email ? `<div class="flex items-center gap-2"><i class="fas fa-envelope w-4"></i> ${personal.email}</div>` : ''}
+                            ${personal.phone ? `<div class="flex items-center gap-2"><i class="fas fa-phone w-4"></i> ${personal.phone}</div>` : ''}
+                            ${personal.location ? `<div class="flex items-center gap-2"><i class="fas fa-map-marker-alt w-4"></i> ${personal.location}</div>` : ''}
+                            ${personal.website ? `<div class="flex items-center gap-2"><i class="fas fa-globe w-4"></i> ${personal.website}</div>` : ''}
+                        </div>
+
+                        ${skills.length ? `
+                            <div class="mb-8">
+                                <h2 class="text-lg font-bold mb-4 border-b border-white/30 pb-2">TECHNICAL SKILLS</h2>
+                                <div class="flex flex-wrap gap-2">
+                                    ${skills.map(skill => `
+                                        <span class="px-2 py-1 bg-white/20 rounded text-xs">${skill}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${education.length ? `
+                            <div>
+                                <h2 class="text-lg font-bold mb-4 border-b border-white/30 pb-2">EDUCATION</h2>
+                                <div class="space-y-3 text-sm">
+                                    ${education.map(edu => `
+                                        <div>
+                                            <div class="font-bold text-sm">${edu.school}</div>
+                                            <div class="text-white/80 text-xs">${edu.degree}</div>
+                                            <div class="text-white/60 text-xs">${edu.graduationDate}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </aside>
+
+                    <main class="w-2/3 p-8 bg-white">
+                        ${personal.summary ? `
+                            <section class="mb-8">
+                                <h2 class="text-xl font-bold mb-4" style="color: ${color}">// PROFILE</h2>
+                                <p class="text-slate-600 leading-relaxed text-sm">${personal.summary}</p>
+                            </section>
+                        ` : ''}
+
+                        ${experience.length ? `
+                            <section class="mb-8">
+                                <h2 class="text-xl font-bold mb-6" style="color: ${color}">// EXPERIENCE</h2>
+                                <div class="space-y-6">
+                                    ${experience.map(exp => `
+                                        <div class="relative pl-4 border-l-2" style="border-color: ${color}">
+                                            <div class="absolute -left-2 top-0 w-4 h-4 rounded-full bg-white border-4" style="border-color: ${color}"></div>
+                                            <h3 class="font-bold text-slate-800 text-lg">${exp.position}</h3>
+                                            <div class="text-slate-600 font-medium mb-1">${exp.company}</div>
+                                            <div class="text-xs text-slate-500 mb-2 font-mono">${exp.startDate} - ${exp.endDate}</div>
+                                            <p class="text-slate-600 text-sm leading-relaxed">${exp.description}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </section>
+                        ` : ''}
+
+                        ${projects.length ? `
+                            <section>
+                                <h2 class="text-xl font-bold mb-6" style="color: ${color}">// PROJECTS</h2>
+                                <div class="grid grid-cols-1 gap-4">
+                                    ${projects.map(proj => `
+                                        <div class="border-l-4 pl-4" style="border-color: ${color}">
+                                            <div class="flex justify-between items-baseline mb-1">
+                                                <h3 class="font-bold text-slate-800">${proj.name}</h3>
+                                                ${proj.link ? `<a href="${proj.link}" class="text-xs" style="color: ${color}">View →</a>` : ''}
+                                            </div>
+                                            ${proj.technologies ? `<div class="text-xs text-slate-500 mb-1 font-mono">${proj.technologies}</div>` : ''}
+                                            <p class="text-slate-600 text-sm">${proj.description}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </section>
+                        ` : ''}
+                    </main>
+                </div>
+            `;
+        }
+
+        // Data Loading
+        function loadDataToForm() {
+            const { personal, experience, education, skills, projects, template, color } = resumeData;
+            
+            // Personal
+            document.getElementById('input-name').value = personal.name || '';
+            document.getElementById('input-title').value = personal.title || '';
+            document.getElementById('input-email').value = personal.email || '';
+            document.getElementById('input-phone').value = personal.phone || '';
+            document.getElementById('input-location').value = personal.location || '';
+            document.getElementById('input-website').value = personal.website || '';
+            document.getElementById('input-summary').value = personal.summary || '';
+            
+            // Template
+            setTemplate(template);
+            setColor(color);
+            
+            // Clear and refill sections
+            document.getElementById('experience-container').innerHTML = '';
+            experience.forEach(exp => addExperience(exp));
+            
+            document.getElementById('education-container').innerHTML = '';
+            education.forEach(edu => addEducation(edu));
+            
+            document.getElementById('projects-container').innerHTML = '';
+            projects.forEach(proj => addProject(proj));
+            
+            renderSkills();
+        }
+
+        function loadDemoData() {
+            resumeData = {
+                template: 'tech',
+                color: '#2563eb',
+                personal: {
+                    name: 'Alex Chen',
+                    title: 'Full Stack Developer',
+                    email: 'alex.chen@email.com',
+                    phone: '+1 (415) 555-0123',
+                    location: 'San Francisco, CA',
+                    website: 'alexchen.dev',
+                    summary: 'Passionate Full Stack Developer with 5+ years of experience building scalable web applications. Specialized in React, Node.js, and cloud infrastructure. Strong advocate for clean code and user-centered design.'
+                },
+                experience: [
+                    {
+                        id: 1,
+                        company: 'TechCorp Inc.',
+                        position: 'Senior Full Stack Developer',
+                        startDate: 'Jan 2021',
+                        endDate: 'Present',
+                        current: true,
+                        description: 'Led development of microservices architecture serving 1M+ users. Reduced API response time by 40% through optimization. Mentored junior developers and established code review practices.'
+                    },
+                    {
+                        id: 2,
+                        company: 'StartupXYZ',
+                        position: 'Full Stack Developer',
+                        startDate: 'Jun 2019',
+                        endDate: 'Dec 2020',
+                        current: false,
+                        description: 'Built MVP from scratch using React and Node.js. Implemented real-time features using WebSockets. Scaled application to handle 100k daily active users.'
+                    }
+                ],
+                education: [
+                    {
+                        id: 1,
+                        school: 'University of California, Berkeley',
+                        degree: 'B.S. Computer Science',
+                        field: '',
+                        graduationDate: 'May 2019'
+                    }
+                ],
+                skills: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'GraphQL', 'Git'],
+                projects: [
+                    {
+                        id: 1,
+                        name: 'E-Commerce Platform',
+                        description: 'Built a full-featured online marketplace with payment integration and real-time inventory management.',
+                        link: 'github.com/alex/ecommerce',
+                        technologies: 'React, Node.js, Stripe, MongoDB'
+                    },
+                    {
+                        id: 2,
+                        name: 'Task Management App',
+                        description: 'Collaborative task manager with real-time updates and team analytics dashboard.',
+                        link: 'taskapp.demo',
+                        technologies: 'Vue.js, Firebase, Tailwind CSS'
+                    }
+                ]
+            };
+            loadDataToForm();
+            updatePreview();
+        }
+
+        function resetAll() {
+            if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+                resumeData = {
+                    template: 'minimal',
+                    color: '#2563eb',
+                    personal: {},
+                    experience: [],
+                    education: [],
+                    skills: [],
+                    projects: []
+                };
+                localStorage.removeItem('resumeCraftData');
+                loadDataToForm();
+                updatePreview();
+            }
+        }
+
+        // Export
+        function exportPDF() {
+            window.print();
+        }
+
+        // Zoom controls
+        function zoomIn() {
+            zoomLevel = Math.min(zoomLevel + 0.1, 1.5);
+            document.getElementById('resume-preview').style.transform = `scale(${zoomLevel})`;
+            document.getElementById('resume-preview').style.transformOrigin = 'top center';
+        }
+
+        function zoomOut() {
+            zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+            document.getElementById('resume-preview').style.transform = `scale(${zoomLevel})`;
+            document.getElementById('resume-preview').style.transformOrigin = 'top center';
+        }
+
+        // Mobile preview
+        function openMobilePreview() {
+            document.getElementById('mobile-preview').classList.remove('hidden');
+            document.getElementById('mobile-preview').classList.add('flex');
+            updatePreview();
+        }
+
+        function closeMobilePreview() {
+            document.getElementById('mobile-preview').classList.add('hidden');
+            document.getElementById('mobile-preview').classList.remove('flex');
+        }
+    </script>
+</body>
+</html>

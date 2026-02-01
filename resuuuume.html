@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surya Prakash - Professional Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .resume-container {
+            max-width: 210mm;
+            margin: 40px auto;
+            background: white;
+            padding: 40px 50px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            min-height: 297mm;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .title {
+            font-size: 16px;
+            color: #2563eb;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            text-transform: uppercase;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+        
+        .summary-text {
+            text-align: justify;
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .skill-category {
+            margin-bottom: 10px;
+        }
+        
+        .skill-title {
+            font-weight: 600;
+            color: #2563eb;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+        
+        .skill-list {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        
+        .education-item {
+            margin-bottom: 15px;
+        }
+        
+        .degree {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .school {
+            color: #64748b;
+            font-size: 14px;
+            font-style: italic;
+        }
+        
+        .details {
+            color: #475569;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+        
+        .project-item {
+            margin-bottom: 20px;
+            padding-left: 15px;
+            border-left: 3px solid #2563eb;
+        }
+        
+        .project-title {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+        
+        .project-tech {
+            color: #2563eb;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .project-desc {
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .achievements-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .achievements-list li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #475569;
+            font-size: 13px;
+        }
+        
+        .achievements-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #2563eb;
+            font-weight: bold;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .languages {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .lang-tag {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .print-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .resume-container {
+                margin: 0;
+                box-shadow: none;
+                max-width: 100%;
+            }
+            .print-btn {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .resume-container {
+                padding: 20px;
+                margin: 20px;
+            }
+            .skills-grid, .two-column {
+                grid-template-columns: 1fr;
+            }
+            .contact-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">📄 Download as PDF</button>
+    
+    <div class="resume-container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="name">SURYA PRAKASH BODA</h1>
+            <div class="title">Python Developer | Data Analyst | MERN Stack Developer</div>
+            <div class="contact-info">
+                <div class="contact-item">📍 Palvancha, Bhadradri Kothagudem, Telangana - 507115</div>
+                <div class="contact-item">📱 +91 7993974026</div>
+                <div class="contact-item">✉ b.7993974026@gmail.com</div>
+                <div class="contact-item">💻 GitHub: github.com/surya-prakash</div>
+                <div class="contact-item">🔗 LinkedIn: linkedin.com/in/suryaprakash</div>
+            </div>
+        </header>
+
+        <!-- Professional Summary -->
+        <section class="section">
+            <h2 class="section-title">Professional Summary</h2>
+            <p class="summary-text">
+                Results-driven Computer Science student with expertise in <strong>Python development, Generative AI, Data Analytics, and MERN Stack web development</strong>. Proficient in building scalable web applications, performing data analysis with Pandas/NumPy, and implementing AI solutions. Demonstrated ability to develop end-to-end projects combining frontend interfaces with robust backend systems. Strong foundation in cloud technologies (AWS) and database management. Seeking opportunities to leverage technical skills in software development and data engineering roles while contributing to innovative organizational solutions.
+            </p>
+        </section>
+
+        <!-- Technical Skills -->
+        <section class="section">
+            <h2 class="section-title">Technical Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <div class="skill-title">Programming & Development</div>
+                    <div class="skill-list">
+                        <strong>Python</strong> (Advanced), <strong>JavaScript (ES6+)</strong>, <strong>SQL</strong>, HTML5, CSS3, C (Basics)
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-title">Web Development (MERN Stack)</div>
+                    <div class="skill-list">
+                        <strong>MongoDB</strong>, <strong>Express.js</strong>, <strong>React.js</strong>, <strong>Node.js</strong>, RESTful APIs, Responsive Design
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-title">Data Analytics & AI</div>
+                    <div class="skill-list">
+                        <strong>Pandas</strong>, <strong>NumPy</strong>, <strong>Data Visualization</strong>, <strong>Generative AI</strong>, MS Excel (Advanced), Statistical Analysis
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-title">Tools & Platforms</div>
+                    <div class="skill-list">
+                        <strong>Git/GitHub</strong>, <strong>AWS (Basics)</strong>, <strong>MySQL/PostgreSQL</strong>, VS Code, Jupyter Notebook, Postman
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects -->
+        <section class="section">
+            <h2 class="section-title">Technical Projects</h2>
+            
+            <div class="project-item">
+                <div class="project-title">Student Data Management System</div>
+                <div class="project-tech">Python | MySQL | Tkinter/Streamlit</div>
+                <div class="project-desc">
+                    • Developed a comprehensive CRUD application for managing student records with intuitive GUI<br>
+                    • Implemented database normalization principles ensuring data integrity and reduced redundancy<br>
+                    • Features include automated report generation, search functionality, and data export to Excel/CSV<br>
+                    • <strong>Impact:</strong> Reduced data retrieval time by 60% through optimized SQL queries and indexing
+                </div>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">E-Commerce MERN Stack Application</div>
+                <div class="project-tech">MongoDB | Express.js | React.js | Node.js | JWT Authentication</div>
+                <div class="project-desc">
+                    • Built full-stack e-commerce platform with user authentication, product catalog, and shopping cart functionality<br>
+                    • Implemented RESTful API architecture with JWT-based authentication and authorization<br>
+                    • Integrated payment gateway simulation and order management system<br>
+                    • <strong>Results:</strong> Responsive design supporting 1000+ concurrent users with 95+ Lighthouse performance score
+                </div>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">Generative AI Content Assistant</div>
+                <div class="project-tech">Python | OpenAI API | LangChain | Flask | Bootstrap</div>
+                <div class="project-desc">
+                    • Created AI-powered web application for automated content generation, text summarization, and code completion<br>
+                    • Utilized LangChain framework for prompt engineering and chaining LLM operations<br>
+                    • Implemented context-aware responses with conversation memory management<br>
+                    • <strong>Features:</strong> Multi-format output (Markdown, JSON), token optimization, and API rate limiting
+                </div>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">Data Analytics Dashboard</div>
+                <div class="project-tech">Python | Pandas | Matplotlib | Plotly | Streamlit</div>
+                <div class="project-desc">
+                    • Designed interactive data visualization dashboard for sales trend analysis and predictive modeling<br>
+                    • Performed data cleaning, transformation, and exploratory data analysis (EDA) on datasets with 10K+ records<br>
+                    • Implemented correlation analysis and statistical hypothesis testing for business insights<br>
+                    • <strong>Outcome:</strong> Automated reporting system reducing manual analysis time by 75%
+                </div>
+            </div>
+
+            <div class="project-item">
+                <div class="project-title">Weather Report Application</div>
+                <div class="project-tech">React.js | OpenWeatherMap API | Chart.js | Geolocation API</div>
+                <div class="project-desc">
+                    • Real-time weather tracking application with location-based forecasts and 7-day predictions<br>
+                    • Implemented data visualization for temperature trends, humidity levels, and precipitation forecasts<br>
+                    • Features include city search, favorite locations, and weather alerts<br>
+                    • Responsive PWA design with offline caching capabilities
+                </div>
+            </div>
+        </section>
+
+        <div class="two-column">
+            <!-- Education -->
+            <section class="section">
+                <h2 class="section-title">Education</h2>
+                
+                <div class="education-item">
+                    <div class="degree">
+                        <span>Bachelor of Technology (B.Tech) - Computer Science</span>
+                        <span>Expected 2026</span>
+                    </div>
+                    <div class="school">[Your University Name], Telangana</div>
+                    <div class="details">CGPA: [X.XX]/10.0 | Relevant Coursework: Data Structures, Algorithms, DBMS, OOPs, Software Engineering</div>
+                </div>
+
+                <div class="education-item">
+                    <div class="degree">
+                        <span>Intermediate (Class 12) - MPC</span>
+                        <span>2022</span>
+                    </div>
+                    <div class="school">Krishnaveni Junior College, Kothagudem</div>
+                    <div class="details">Telangana State Board | Percentage: 81.8%</div>
+                </div>
+
+                <div class="education-item">
+                    <div class="degree">
+                        <span>Secondary School (Class 10)</span>
+                        <span>2020</span>
+                    </div>
+                    <div class="school">ZPHS Bollerugudem, Telangana</div>
+                    <div class="details">Percentage: 72%</div>
+                </div>
+            </section>
+
+            <!-- Certifications & Achievements -->
+            <section class="section">
+                <h2 class="section-title">Certifications</h2>
+                <ul class="achievements-list">
+                    <li>Python for Data Science - [Platform/Coursera/udemy]</li>
+                    <li>MERN Stack Development - [Platform]</li>
+                    <li>Generative AI Fundamentals - [Platform]</li>
+                    <li>AWS Cloud Practitioner Essentials (In Progress/Ongoing)</li>
+                    <li>Data Analytics with Python - [Platform]</li>
+                </ul>
+
+                <h2 class="section-title" style="margin-top: 20px;">Achievements</h2>
+                <ul class="achievements-list">
+                    <li>Secured <strong>First Rank</strong> in Inter-School Running Competition</li>
+                    <li>Represented school cricket team at district level tournaments</li>
+                    <li>Successfully completed 5+ full-stack projects deployed on GitHub</li>
+                    <li>Maintained consistent academic performance with 81.8% in Intermediate</li>
+                </ul>
+            </section>
+        </div>
+
+        <!-- Soft Skills & Languages -->
+        <section class="section">
+            <h2 class="section-title">Additional Information</h2>
+            <div class="two-column">
+                <div>
+                    <strong style="color: #2563eb; font-size: 13px;">Soft Skills:</strong>
+                    <p style="font-size: 13px; color: #475569; margin-top: 5px;">
+                        Problem Solving, Analytical Thinking, Team Collaboration, Time Management, Adaptability, Quick Learning
+                    </p>
+                </div>
+                <div>
+                    <strong style="color: #2563eb; font-size: 13px;">Languages:</strong>
+                    <div class="languages" style="margin-top: 5px;">
+                        <span class="lang-tag">English (Professional)</span>
+                        <span class="lang-tag">Telugu (Native)</span>
+                        <span class="lang-tag">Hindi (Fluent)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Auto-save to localStorage for form persistence
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                localStorage.setItem(e.target.name || e.target.placeholder, e.target.value);
+            });
+            
+            // Restore values
+            const saved = localStorage.getItem(input.name || input.placeholder);
+            if (saved) input.value = saved;
+        });
+
+        // ATS Keyword highlighter (for review purposes)
+        const atsKeywords = ['python', 'javascript', 'mern', 'mongodb', 'react', 'node', 'sql', 'data analytics', 'generative ai'];
+        
+        console.log('ATS Keywords present:', atsKeywords.filter(kw => 
+            document.body.innerText.toLowerCase().includes(kw)
+        ));
+    </script>
+</body>
+</html>

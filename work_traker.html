@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Work Tracker - Time Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #151515;
+            --bg-card: #1a1a1a;
+            --bg-hover: #252525;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --border: #27272a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 100;
+                flex-direction: row;
+                padding: 0.5rem;
+                border-top: 1px solid var(--border);
+                justify-content: space-around;
+            }
+            .main-content {
+                padding-bottom: 80px;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 0.5rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border: none;
+            background: none;
+            width: 100%;
+            font-size: 0.9375rem;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+
+        .date-display {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #a855f7);
+        }
+
+        .stat-card.success::before {
+            background: var(--success);
+        }
+
+        .stat-card.warning::before {
+            background: var(--warning);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-subtext {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Timer Section */
+        .timer-container {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: 200;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 2rem;
+            font-family: 'Courier New', monospace;
+            letter-spacing: -2px;
+        }
+
+        @media (max-width: 640px) {
+            .timer-display {
+                font-size: 3rem;
+            }
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 0.9375rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #333;
+        }
+
+        .btn-danger {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Task List */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .task-item:hover {
+            border-color: var(--accent);
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .task-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .task-tag {
+            padding: 0.125rem 0.5rem;
+            background-color: rgba(99, 102, 241, 0.2);
+            color: var(--accent);
+            border-radius: 1rem;
+            font-size: 0.75rem;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 0.375rem;
+            border: none;
+            background-color: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-icon.delete:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        /* Time Log */
+        .log-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+        }
+
+        .log-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .log-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .log-time {
+            text-align: right;
+        }
+
+        .log-duration {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+            font-family: 'Courier New', monospace;
+        }
+
+        .log-date {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .project-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            position: relative;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .project-name {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .project-client {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .project-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .project-stat {
+            text-align: center;
+        }
+
+        .project-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .project-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: var(--bg-hover);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #a855f7);
+            transition: width 0.3s;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .timer-running {
+            animation: pulse 2s infinite;
+            color: var(--success);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <span>WorkTracker</span>
+            </div>
+
+            <button class="nav-item active" onclick="showView('dashboard')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Dashboard
+            </button>
+
+            <button class="nav-item" onclick="showView('timer')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Timer
+            </button>
+
+            <button class="nav-item" onclick="showView('tasks')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"></path>
+                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                </svg>
+                Tasks
+            </button>
+
+            <button class="nav-item" onclick="showView('projects')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"></path>
+                </svg>
+                Projects
+            </button>
+
+            <button class="nav-item" onclick="showView('reports')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"></path>
+                    <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
+                </svg>
+                Reports
+            </button>
+
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border);">
+                <button class="nav-item" onclick="exportData()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Export Data
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view">
+                <div class="header">
+                    <div>
+                        <h1 class="page-title">Dashboard</h1>
+                        <div class="date-display" id="currentDate"></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="quickStartTimer()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        Start Timer
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Today's Focus Time</div>
+                        <div class="stat-value" id="todayHours">0h 0m</div>
+                        <div class="stat-subtext">Keep it up!</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-label">Tasks Completed</div>
+                        <div class="stat-value" id="completedTasks">0</div>
+                        <div class="stat-subtext" id="taskRatio">0 of 0 total</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-label">Active Projects</div>
+                        <div class="stat-value" id="activeProjects">0</div>
+                        <div class="stat-subtext">In progress</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Weekly Total</div>
+                        <div class="stat-value" id="weeklyHours">0h 0m</div>
+                        <div class="stat-subtext">This week</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Today's Tasks</h3>
+                        <button class="btn btn-secondary" onclick="showView('tasks')">View All</button>
+                    </div>
+                    <div id="dashboardTasks" class="task-list">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"></path>
+                                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                            </svg>
+                            <p>No tasks for today. Add one to get started!</p>
+                            <button class="btn btn-primary" onclick="showView('tasks')" style="margin-top: 1rem;">Add Task</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Time Logs</h3>
+                        <button class="btn btn-secondary" onclick="showView('timer')">View All</button>
+                    </div>
+                    <div id="recentLogs" class="log-list">
+                        <div class="empty-state">
+                            <p>No recent logs. Start the timer to track your work!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer View -->
+            <div id="view-timer" class="view hidden">
+                <div class="header">
+                    <h1 class="page-title">Timer</h1>
+                </div>
+
+                <div class="card timer-container">
+                    <div class="timer-display" id="timerDisplay">00:00:00</div>
+                    
+                    <div class="form-row" style="max-width: 500px; margin: 0 auto 2rem;">
+                        <div class="form-group" style="flex: 2;">
+                            <label>What are you working on?</label>
+                            <input type="text" id="timerTask" placeholder="Enter task description...">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Project</label>
+                            <select id="timerProject">
+                                <option value="">No Project</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="timer-controls">
+                        <button class="btn btn-success" id="startBtn" onclick="startTimer()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            Start
+                        </button>
+                        <button class="btn btn-secondary hidden" id="pauseBtn" onclick="pauseTimer()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <rect x="6" y="4" width="4" height="16"></rect>
+                                <rect x="14" y="4" width="4" height="16"></rect>
+                            </svg>
+                            Pause
+                        </button>
+                        <button class="btn btn-danger hidden" id="stopBtn" onclick="stopTimer()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <rect x="4" y="4" width="16" height="16"></rect>
+                            </svg>
+                            Stop & Save
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Time Log History</h3>
+                        <button class="btn btn-secondary" onclick="clearAllLogs()">Clear All</button>
+                    </div>
+                    <div id="timeLogs" class="log-list">
+                        <!-- Logs inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks View -->
+            <div id="view-tasks" class="view hidden">
+                <div class="header">
+                    <h1 class="page-title">Tasks</h1>
+                    <button class="btn btn-primary" onclick="openTaskModal()">+ New Task</button>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <select id="taskFilter" onchange="renderTasks()" style="width: auto; min-width: 150px;">
+                            <option value="all">All Tasks</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <select id="projectFilter" onchange="renderTasks()" style="width: auto; min-width: 150px;">
+                            <option value="all">All Projects</option>
+                        </select>
+                    </div>
+
+                    <div id="taskList" class="task-list">
+                        <!-- Tasks rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects View -->
+            <div id="view-projects" class="view hidden">
+                <div class="header">
+                    <h1 class="page-title">Projects</h1>
+                    <button class="btn btn-primary" onclick="openProjectModal()">+ New Project</button>
+                </div>
+
+                <div id="projectsGrid" class="projects-grid">
+                    <!-- Projects rendered here -->
+                </div>
+            </div>
+
+            <!-- Reports View -->
+            <div id="view-reports" class="view hidden">
+                <div class="header">
+                    <h1 class="page-title">Reports</h1>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">This Month</div>
+                        <div class="stat-value" id="monthHours">0h 0m</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Tracked</div>
+                        <div class="stat-value" id="totalHours">0h 0m</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Most Productive Day</div>
+                        <div class="stat-value" id="bestDay">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Average Daily</div>
+                        <div class="stat-value" id="avgDaily">0h 0m</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Time by Project</h3>
+                    </div>
+                    <div id="projectStats">
+                        <!-- Stats rendered here -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+        <div class="card" style="width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+            <div class="card-header">
+                <h3 class="card-title" id="taskModalTitle">New Task</h3>
+                <button class="btn-icon" onclick="closeTaskModal()">×</button>
+            </div>
+            <form onsubmit="saveTask(event)">
+                <input type="hidden" id="taskId">
+                <div class="form-group">
+                    <label>Task Name</label>
+                    <input type="text" id="taskName" required placeholder="Enter task description...">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Project</label>
+                        <select id="taskProject">
+                            <option value="">No Project</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="taskDueDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="taskPriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="projectModal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+        <div class="card" style="width: 100%; max-width: 500px;">
+            <div class="card-header">
+                <h3 class="card-title">New Project</h3>
+                <button class="btn-icon" onclick="closeProjectModal()">×</button>
+            </div>
+            <form onsubmit="saveProject(event)">
+                <div class="form-group">
+                    <label>Project Name</label>
+                    <input type="text" id="projectName" required placeholder="Enter project name...">
+                </div>
+                <div class="form-group">
+                    <label>Client (Optional)</label>
+                    <input type="text" id="projectClient" placeholder="Client or company name...">
+                </div>
+                <div class="form-group">
+                    <label>Hourly Rate ($) (Optional)</label>
+                    <input type="number" id="projectRate" placeholder="0.00" step="0.01">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeProjectModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // State Management
+        let timerInterval = null;
+        let timerStartTime = null;
+        let timerPausedTime = 0;
+        let currentView = 'dashboard';
+        
+        let data = {
+            tasks: [],
+            projects: [
+                { id: 'default', name: 'General', client: null, rate: 0 }
+            ],
+            timeLogs: []
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            updateDate();
+            updateTimerProjectSelect();
+            renderAll();
+            
+            // Set today's date for date inputs
+            document.getElementById('taskDueDate').valueAsDate = new Date();
+            
+            // Auto-save interval
+            setInterval(saveData, 30000); // Save every 30 seconds
+        });
+
+        function loadData() {
+            const saved = localStorage.getItem('workTrackerData');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('workTrackerData', JSON.stringify(data));
+        }
+
+        function updateDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        // View Management
+        function showView(view) {
+            currentView = view;
+            
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Show/hide views
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`view-${view}`).classList.remove('hidden');
+            
+            // Refresh data for view
+            if (view === 'dashboard') renderDashboard();
+            if (view === 'timer') renderTimeLogs();
+            if (view === 'tasks') renderTasks();
+            if (view === 'projects') renderProjects();
+            if (view === 'reports') renderReports();
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderTimeLogs();
+            renderTasks();
+            renderProjects();
+            renderReports();
+            updateTimerProjectSelect();
+        }
+
+        // Timer Functions
+        function startTimer() {
+            const task = document.getElementById('timerTask').value.trim();
+            if (!task) {
+                showToast('Please enter a task description');
+                document.getElementById('timerTask').focus();
+                return;
+            }
+            
+            timerStartTime = Date.now() - timerPausedTime;
+            
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('pauseBtn').classList.remove('hidden');
+            document.getElementById('stopBtn').classList.remove('hidden');
+            document.getElementById('timerDisplay').classList.add('timer-running');
+            
+            timerInterval = setInterval(updateTimerDisplay, 100);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerPausedTime = Date.now() - timerStartTime;
+            
+            document.getElementById('pauseBtn').classList.add('hidden');
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('startBtn').innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Resume
+            `;
+            document.getElementById('timerDisplay').classList.remove('timer-running');
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            
+            const endTime = Date.now();
+            const duration = Math.floor((endTime - timerStartTime) / 1000); // in seconds
+            
+            const task = document.getElementById('timerTask').value;
+            const projectId = document.getElementById('timerProject').value;
+            
+            // Create time log
+            const log = {
+                id: Date.now(),
+                task: task,
+                projectId: projectId,
+                startTime: new Date(timerStartTime).toISOString(),
+                endTime: new Date(endTime).toISOString(),
+                duration: duration
+            };
+            
+            data.timeLogs.unshift(log);
+            saveData();
+            
+            // Reset timer
+            timerPausedTime = 0;
+            document.getElementById('timerTask').value = '';
+            document.getElementById('timerDisplay').textContent = '00:00:00';
+            document.getElementById('timerDisplay').classList.remove('timer-running');
+            
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('startBtn').innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Start
+            `;
+            document.getElementById('pauseBtn').classList.add('hidden');
+            document.getElementById('stopBtn').classList.add('hidden');
+            
+            showToast(`Saved: ${formatDuration(duration)}`);
+            renderTimeLogs();
+            renderDashboard();
+            renderReports();
+        }
+
+        function updateTimerDisplay() {
+            const elapsed = Math.floor((Date.now() - timerStartTime) / 1000);
+            document.getElementById('timerDisplay').textContent = formatDuration(elapsed);
+        }
+
+        function formatDuration(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function formatDurationShort(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            if (hrs > 0) {
+                return `${hrs}h ${mins}m`;
+            }
+            return `${mins}m`;
+        }
+
+        function quickStartTimer() {
+            showView('timer');
+        }
+
+        // Task Management
+        function openTaskModal(taskId = null) {
+            document.getElementById('taskModal').classList.remove('hidden');
+            
+            if (taskId) {
+                const task = data.tasks.find(t => t.id === taskId);
+                document.getElementById('taskModalTitle').textContent = 'Edit Task';
+                document.getElementById('taskId').value = task.id;
+                document.getElementById('taskName').value = task.name;
+                document.getElementById('taskProject').value = task.projectId || '';
+                document.getElementById('taskDueDate').value = task.dueDate || '';
+                document.getElementById('taskPriority').value = task.priority;
+            } else {
+                document.getElementById('taskModalTitle').textContent = 'New Task';
+                document.getElementById('taskId').value = '';
+                document.getElementById('taskName').value = '';
+                document.getElementById('taskProject').value = '';
+                document.getElementById('taskDueDate').valueAsDate = new Date();
+                document.getElementById('taskPriority').value = 'medium';
+            }
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+        }
+
+        function saveTask(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('taskId').value;
+            const taskData = {
+                id: id || Date.now().toString(),
+                name: document.getElementById('taskName').value,
+                projectId: document.getElementById('taskProject').value,
+                dueDate: document.getElementById('taskDueDate').value,
+                priority: document.getElementById('taskPriority').value,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            if (id) {
+                const idx = data.tasks.findIndex(t => t.id === id);
+                taskData.completed = data.tasks[idx].completed;
+                data.tasks[idx] = taskData;
+            } else {
+                data.tasks.push(taskData);
+            }
+            
+            saveData();
+            closeTaskModal();
+            renderTasks();
+            renderDashboard();
+            showToast('Task saved');
+        }
+
+        function toggleTask(id) {
+            const task = data.tasks.find(t => t.id === id);
+            task.completed = !task.completed;
+            saveData();
+            renderTasks();
+            renderDashboard();
+        }
+
+        function deleteTask(id) {
+            data.tasks = data.tasks.filter(t => t.id !== id);
+            saveData();
+            renderTasks();
+            renderDashboard();
+        }
+
+        function renderTasks() {
+            const filter = document.getElementById('taskFilter').value;
+            const projectFilter = document.getElementById('projectFilter').value;
+            
+            let tasks = data.tasks;
+            
+            if (filter === 'pending') tasks = tasks.filter(t => !t.completed);
+            if (filter === 'completed') tasks = tasks.filter(t => t.completed);
+            if (projectFilter !== 'all') tasks = tasks.filter(t => t.projectId === projectFilter);
+            
+            const container = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+                            <path d="M9 11l3 3L22 4"></path>
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                        </svg>
+                        <p>No tasks found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by completed status then priority
+            const priorityOrder = { high: 0, medium: 1, low: 2 };
+            tasks.sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            });
+            
+            container.innerHTML = tasks.map(task => {
+                const project = data.projects.find(p => p.id === task.projectId);
+                const priorityColors = {
+                    high: 'text-danger',
+                    medium: 'text-warning',
+                    low: 'text-success'
+                };
+                
+                return `
+                    <div class="task-item ${task.completed ? 'completed' : ''}">
+                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                        <div class="task-content">
+                            <div class="task-title">${task.name}</div>
+                            <div class="task-meta">
+                                ${project ? `<span class="task-tag">${project.name}</span>` : ''}
+                                <span class="${priorityColors[task.priority]}">● ${task.priority}</span>
+                                ${task.dueDate ? `<span>Due: ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn-icon" onclick="openTaskModal('${task.id}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                            <button class="btn-icon delete" onclick="deleteTask('${task.id}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Update filter dropdown
+            updateProjectFilter();
+        }
+
+        // Project Management
+        function openProjectModal() {
+            document.getElementById('projectModal').classList.remove('hidden');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.add('hidden');
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectClient').value = '';
+            document.getElementById('projectRate').value = '';
+        }
+
+        function saveProject(e) {
+            e.preventDefault();
+            
+            const project = {
+                id: Date.now().toString(),
+                name: document.getElementById('projectName').value,
+                client: document.getElementById('projectClient').value,
+                rate: parseFloat(document.getElementById('projectRate').value) || 0
+            };
+            
+            data.projects.push(project);
+            saveData();
+            closeProjectModal();
+            renderProjects();
+            updateTimerProjectSelect();
+            updateProjectFilter();
+            showToast('Project created');
+        }
+
+        function deleteProject(id) {
+            if (id === 'default') {
+                showToast('Cannot delete default project');
+                return;
+            }
+            data.projects = data.projects.filter(p => p.id !== id);
+            data.tasks.forEach(t => { if (t.projectId === id) t.projectId = ''; });
+            data.timeLogs.forEach(l => { if (l.projectId === id) l.projectId = ''; });
+            saveData();
+            renderProjects();
+            renderTasks();
+            updateTimerProjectSelect();
+            updateProjectFilter();
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projectsGrid');
+            
+            if (data.projects.length === 1) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+                            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"></path>
+                        </svg>
+                        <p>No custom projects yet</p>
+                        <button class="btn btn-primary" onclick="openProjectModal()" style="margin-top: 1rem;">Create First Project</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = data.projects.map(project => {
+                const projectLogs = data.timeLogs.filter(l => l.projectId === project.id);
+                const totalSeconds = projectLogs.reduce((sum, log) => sum + log.duration, 0);
+                const taskCount = data.tasks.filter(t => t.projectId === project.id && !t.completed).length;
+                
+                if (project.id === 'default') return '';
+                
+                return `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <div>
+                                <div class="project-name">${project.name}</div>
+                                ${project.client ? `<div class="project-client">${project.client}</div>` : ''}
+                            </div>
+                            <button class="btn-icon delete" onclick="deleteProject('${project.id}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="project-stats">
+                            <div class="project-stat">
+                                <div class="project-stat-value">${formatDurationShort(totalSeconds)}</div>
+                                <div class="project-stat-label">Tracked</div>
+                            </div>
+                            <div class="project-stat">
+                                <div class="project-stat-value">${taskCount}</div>
+                                <div class="project-stat-label">Open Tasks</div>
+                            </div>
+                        </div>
+                        ${project.rate > 0 ? `
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.875rem; color: var(--text-secondary);">
+                                Rate: $${project.rate}/hr
+                                <div style="float: right; color: var(--accent); font-weight: 600;">
+                                    $${((totalSeconds / 3600) * project.rate).toFixed(2)} earned
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateTimerProjectSelect() {
+            const selects = [document.getElementById('timerProject'), document.getElementById('taskProject')];
+            selects.forEach(select => {
+                if (!select) return;
+                const currentVal = select.value;
+                select.innerHTML = '<option value="">No Project</option>' + 
+                    data.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                select.value = currentVal;
+            });
+        }
+
+        function updateProjectFilter() {
+            const select = document.getElementById('projectFilter');
+            if (!select) return;
+            const currentVal = select.value;
+            select.innerHTML = '<option value="all">All Projects</option>' + 
+                data.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            select.value = currentVal;
+        }
+
+        // Time Logs
+        function renderTimeLogs() {
+            const container = document.getElementById('timeLogs');
+            
+            if (data.timeLogs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>No time logs yet. Start the timer to track your work!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = data.timeLogs.map(log => {
+                const project = data.projects.find(p => p.id === log.projectId);
+                const date = new Date(log.startTime);
+                
+                return `
+                    <div class="log-item">
+                        <div class="log-info">
+                            <h4>${log.task}</h4>
+                            <p>${project ? project.name : 'No Project'} • ${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                        </div>
+                        <div class="log-time">
+                            <div class="log-duration">${formatDurationShort(log.duration)}</div>
+                            <div class="log-date">
+                                <button class="btn-icon delete" onclick="deleteLog(${log.id})" style="width: 24px; height: 24px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteLog(id) {
+            data.timeLogs = data.timeLogs.filter(l => l.id !== id);
+            saveData();
+            renderTimeLogs();
+            renderDashboard();
+            renderReports();
+        }
+
+        function clearAllLogs() {
+            if (confirm('Clear all time logs? This cannot be undone.')) {
+                data.timeLogs = [];
+                saveData();
+                renderTimeLogs();
+                renderDashboard();
+                renderReports();
+                showToast('All logs cleared');
+            }
+        }
+
+        // Dashboard
+        function renderDashboard() {
+            // Today's stats
+            const today = new Date().toDateString();
+            const todayLogs = data.timeLogs.filter(l => new Date(l.startTime).toDateString() === today);
+            const todaySeconds = todayLogs.reduce((sum, log) => sum + log.duration, 0);
+            document.getElementById('todayHours').textContent = formatDurationShort(todaySeconds);
+            
+            // Weekly stats
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekLogs = data.timeLogs.filter(l => new Date(l.startTime) >= weekAgo);
+            const weekSeconds = weekLogs.reduce((sum, log) => sum + log.duration, 0);
+            document.getElementById('weeklyHours').textContent = formatDurationShort(weekSeconds);
+            
+            // Task stats
+            const completed = data.tasks.filter(t => t.completed).length;
+            const total = data.tasks.length;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('taskRatio').textContent = `${completed} of ${total} total`;
+            
+            // Active projects (with logs in last 30 days)
+            const monthAgo = new Date();
+            monthAgo.setDate(monthAgo.getDate() - 30);
+            const activeProjectIds = new Set(data.timeLogs.filter(l => new Date(l.startTime) >= monthAgo).map(l => l.projectId));
+            document.getElementById('activeProjects').textContent = activeProjectIds.size;
+            
+            // Recent tasks
+            const recentTasks = data.tasks.slice(0, 5);
+            const taskContainer = document.getElementById('dashboardTasks');
+            
+            if (recentTasks.length === 0) {
+                taskContainer.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+                            <path d="M9 11l3 3L22 4"></path>
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                        </svg>
+                        <p>No tasks yet. Add one to get started!</p>
+                        <button class="btn btn-primary" onclick="showView('tasks')" style="margin-top: 1rem;">Add Task</button>
+                    </div>
+                `;
+            } else {
+                taskContainer.innerHTML = recentTasks.map(task => {
+                    const project = data.projects.find(p => p.id === task.projectId);
+                    return `
+                        <div class="task-item ${task.completed ? 'completed' : ''}">
+                            <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                            <div class="task-content">
+                                <div class="task-title">${task.name}</div>
+                                <div class="task-meta">
+                                    ${project ? `<span class="task-tag">${project.name}</span>` : ''}
+                                    <span class="${task.priority === 'high' ? 'text-danger' : task.priority === 'medium' ? 'text-warning' : 'text-success'}">● ${task.priority}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Recent logs
+            const recentLogs = data.timeLogs.slice(0, 5);
+            const logsContainer = document.getElementById('recentLogs');
+            
+            if (recentLogs.length === 0) {
+                logsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>No recent logs. Start the timer to track your work!</p>
+                    </div>
+                `;
+            } else {
+                logsContainer.innerHTML = recentLogs.map(log => {
+                    const project = data.projects.find(p => p.id === log.projectId);
+                    return `
+                        <div class="log-item">
+                            <div class="log-info">
+                                <h4>${log.task}</h4>
+                                <p>${project ? project.name : 'No Project'}</p>
+                            </div>
+                            <div class="log-time">
+                                <div class="log-duration">${formatDurationShort(log.duration)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Reports
+        function renderReports() {
+            // Monthly stats
+            const monthAgo = new Date();
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            const monthLogs = data.timeLogs.filter(l => new Date(l.startTime) >= monthAgo);
+            const monthSeconds = monthLogs.reduce((sum, log) => sum + log.duration, 0);
+            document.getElementById('monthHours').textContent = formatDurationShort(monthSeconds);
+            
+            // Total stats
+            const totalSeconds = data.timeLogs.reduce((sum, log) => sum + log.duration, 0);
+            document.getElementById('totalHours').textContent = formatDurationShort(totalSeconds);
+            
+            // Average daily (only counting days with logs)
+            const daysWithLogs = new Set(data.timeLogs.map(l => new Date(l.startTime).toDateString())).size;
+            const avgSeconds = daysWithLogs > 0 ? totalSeconds / daysWithLogs : 0;
+            document.getElementById('avgDaily').textContent = formatDurationShort(avgSeconds);
+            
+            // Best day
+            const dailyTotals = {};
+            data.timeLogs.forEach(log => {
+                const day = new Date(log.startTime).toDateString();
+                dailyTotals[day] = (dailyTotals[day] || 0) + log.duration;
+            });
+            const bestDay = Object.entries(dailyTotals).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('bestDay').textContent = bestDay ? new Date(bestDay[0]).toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'}) : '-';
+            
+            // Project breakdown
+            const projectStatsContainer = document.getElementById('projectStats');
+            const projectTimes = {};
+            data.timeLogs.forEach(log => {
+                const pid = log.projectId || 'default';
+                projectTimes[pid] = (projectTimes[pid] || 0) + log.duration;
+            });
+            
+            const maxTime = Math.max(...Object.values(projectTimes), 1);
+            
+            projectStatsContainer.innerHTML = data.projects.map(project => {
+                const seconds = projectTimes[project.id] || 0;
+                const percentage = (seconds / maxTime) * 100;
+                
+                return `
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600;">${project.name}</span>
+                            <span style="color: var(--text-secondary);">${formatDurationShort(seconds)}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Export
+        function exportData() {
+            const exportObj = {
+                exportDate: new Date().toISOString(),
+                data: data
+            };
+            
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `work-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Data exported successfully');
+        }
+
+        // Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeTaskModal();
+                closeProjectModal();
+            }
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportData();
+            }
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                if (currentView === 'tasks') openTaskModal();
+                if (currentView === 'projects') openProjectModal();
+            }
+        });
+    </script>
+</body>
+</html>
